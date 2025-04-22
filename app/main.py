@@ -36,6 +36,8 @@ from models.similarity import TitleSimilarityAnalyzer
 from models.linking_rules import LinkingRulesManager
 from models.pagerank import calculate_pagerank, calculate_pagerank_with_suggestions
 
+
+
 # Initialiser le gestionnaire de règles de maillage
 rules_manager = LinkingRulesManager()
 
