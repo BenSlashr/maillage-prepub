@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Règles de Maillage - Maillage Pré-Publication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="py-4 text-center">
+            <h1 class="display-4">Maillage Pré-Publication</h1>
+            <p class="lead">Configuration des Règles de Maillage</p>
+        </header>
+
+        <nav class="nav nav-pills nav-justified mb-4">
+            <a class="nav-link" href="/">Accueil</a>
+            <a class="nav-link" href="/upload">Upload</a>
+            <a class="nav-link active" href="/rules">Règles de Maillage</a>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Configuration des Règles de Maillage</h2>
+                        
+                        <div class="mb-4">
+                            <p>Les règles de maillage définissent comment les différents types d'articles peuvent être liés entre eux. Vous pouvez configurer :</p>
+                            <ul>
+                                <li><strong>Nombre minimum de liens</strong> : Nombre minimum de liens à suggérer entre deux types d'articles</li>
+                                <li><strong>Nombre maximum de liens</strong> : Nombre maximum de liens à suggérer entre deux types d'articles</li>
+                                <li><strong>Similarité minimum</strong> : Score de similarité minimum requis pour suggérer un lien (entre 0 et 1)</li>
+                                <li><strong>Activation</strong> : Activer ou désactiver les liens entre certains types d'articles</li>
+                            </ul>
+                            <div class="alert alert-info">
+                                <strong>Note importante :</strong> Les articles de même type peuvent être liés entre eux, mais un article ne peut jamais faire de lien vers lui-même. Par exemple, un article "Comment faire un audit SEO" ne pourra pas faire de lien vers lui-même, mais pourra faire un lien vers un autre article du même type.
+                            </div>
+                        </div>
+
+                        <!-- Formulaire pour ajouter un nouveau type d'article -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="h5 mb-0">Ajouter un type d'article</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="addTypeForm" action="/rules/add_type" method="post">
+                                    <div class="mb-3">
+                                        <label for="newType" class="form-label">Nom du type d'article</label>
+                                        <input type="text" class="form-control" id="newType" name="new_type" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Types d'articles existants -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="h5 mb-0">Types d'articles existants</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for type in types %}
+                                    <div class="col-md-3 mb-2">
+                                        <span class="badge bg-primary">{{ type }}</span>
+                                    </div>
+                                    {% else %}
+                                    <div class="col-12">
+                                        <p class="text-muted">Aucun type d'article défini. Ajoutez-en un ci-dessus.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration des règles -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="h5 mb-0">Configuration des règles</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="rulesForm" action="/rules/save" method="post">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Source → Cible</th>
+                                                    {% for target_type in types %}
+                                                    <th>{{ target_type }}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for source_type in types %}
+                                                <tr>
+                                                    <th>{{ source_type }}</th>
+                                                    {% for target_type in types %}
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#ruleModal" 
+                                                                data-source="{{ source_type }}" 
+                                                                data-target="{{ target_type }}"
+                                                                data-min-links="{{ rules.get(source_type, {}).get(target_type, {}).get('min_links', 0) }}"
+                                                                data-max-links="{{ rules.get(source_type, {}).get(target_type, {}).get('max_links', 5) }}"
+                                                                data-min-similarity="{{ rules.get(source_type, {}).get(target_type, {}).get('min_similarity', 0.3) }}"
+                                                                data-enabled="{{ rules.get(source_type, {}).get(target_type, {}).get('enabled', True)|lower }}">
+                                                            {% if rules.get(source_type, {}).get(target_type, {}).get('enabled', True) %}
+                                                            <i class="bi bi-check-circle"></i>
+                                                            {% else %}
+                                                            <i class="bi bi-x-circle"></i>
+                                                            {% endif %}
+                                                            Configurer
+                                                        </button>
+                                                    </td>
+                                                    {% endfor %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mt-3 text-center">
+                                        <button type="submit" class="btn btn-success">Enregistrer toutes les règles</button>
+                                        <a href="/rules/export" class="btn btn-secondary ms-2">Exporter (JSON)</a>
+                                        <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#importModal">Importer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal pour configurer une règle -->
+        <div class="modal fade" id="ruleModal" tabindex="-1" aria-labelledby="ruleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ruleModalLabel">Configurer la règle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="ruleConfigForm" action="/rules/update" method="post">
+                            <input type="hidden" id="sourceType" name="source_type">
+                            <input type="hidden" id="targetType" name="target_type">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Règle pour : <span id="ruleDescription"></span></label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="minLinks" class="form-label">Nombre minimum de liens</label>
+                                <input type="number" class="form-control" id="minLinks" name="min_links" min="0" value="0">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="maxLinks" class="form-label">Nombre maximum de liens</label>
+                                <input type="number" class="form-control" id="maxLinks" name="max_links" min="1" value="5">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="minSimilarity" class="form-label">Similarité minimum (0-1)</label>
+                                <input type="number" class="form-control" id="minSimilarity" name="min_similarity" min="0" max="1" step="0.1" value="0.3">
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked>
+                                <label class="form-check-label" for="enabled">Activer les liens</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="saveRuleBtn">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal pour importer des règles -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Importer des règles</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="importForm" action="/rules/import" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="rulesFile" class="form-label">Fichier de règles (JSON)</label>
+                                <input type="file" class="form-control" id="rulesFile" name="rules_file" accept=".json" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="importRulesBtn">Importer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-5 text-center text-muted">
+            <p>&copy; 2025 Maillage Pré-Publication</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"></script>
+    <script>
+        // Initialiser les modals
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurer le modal de règle
+            const ruleModal = document.getElementById('ruleModal');
+            if (ruleModal) {
+                ruleModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const sourceType = button.getAttribute('data-source');
+                    const targetType = button.getAttribute('data-target');
+                    const minLinks = button.getAttribute('data-min-links');
+                    const maxLinks = button.getAttribute('data-max-links');
+                    const minSimilarity = button.getAttribute('data-min-similarity');
+                    const enabled = button.getAttribute('data-enabled') === 'true';
+                    
+                    // Mettre à jour le formulaire
+                    document.getElementById('sourceType').value = sourceType;
+                    document.getElementById('targetType').value = targetType;
+                    document.getElementById('ruleDescription').textContent = `${sourceType} → ${targetType}`;
+                    document.getElementById('minLinks').value = minLinks;
+                    document.getElementById('maxLinks').value = maxLinks;
+                    document.getElementById('minSimilarity').value = minSimilarity;
+                    document.getElementById('enabled').checked = enabled;
+                });
+            }
+            
+            // Gérer le bouton de sauvegarde de règle
+            const saveRuleBtn = document.getElementById('saveRuleBtn');
+            if (saveRuleBtn) {
+                saveRuleBtn.addEventListener('click', function() {
+                    document.getElementById('ruleConfigForm').submit();
+                });
+            }
+            
+            // Gérer le bouton d'import
+            const importRulesBtn = document.getElementById('importRulesBtn');
+            if (importRulesBtn) {
+                importRulesBtn.addEventListener('click', function() {
+                    document.getElementById('importForm').submit();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "article": {
+    "article": {
+      "min_links": 0,
+      "max_links": 5,
+      "min_similarity": 0.3,
+      "enabled": true
+    },
+    "produit": {
+      "min_links": 1,
+      "max_links": 3,
+      "min_similarity": 0.25,
+      "enabled": true
+    },
+    "categorie": {
+      "min_links": 1,
+      "max_links": 2,
+      "min_similarity": 0.2,
+      "enabled": true
+    }
+  },
+  "produit": {
+    "article": {
+      "min_links": 0,
+      "max_links": 3,
+      "min_similarity": 0.25,
+      "enabled": true
+    },
+    "produit": {
+      "min_links": 0,
+      "max_links": 2,
+      "min_similarity": 0.4,
+      "enabled": true
+    },
+    "categorie": {
+      "min_links": 1,
+      "max_links": 1,
+      "min_similarity": 0.3,
+      "enabled": true
+    }
+  },
+  "categorie": {
+    "article": {
+      "min_links": 2,
+      "max_links": 10,
+      "min_similarity": 0.2,
+      "enabled": true
+    },
+    "produit": {
+      "min_links": 3,
+      "max_links": 15,
+      "min_similarity": 0.2,
+      "enabled": true
+    },
+    "categorie": {
+      "min_links": 0,
+      "max_links": 3,
+      "min_similarity": 0.3,
+      "enabled": true
+    }
+  }
+}

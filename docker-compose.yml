@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  maillage-prepub:
+    build: .
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./app/data:/app/app/data
+      - ./app/results:/app/app/results
+    environment:
+      - PORT=8004
+    restart: unless-stopped
