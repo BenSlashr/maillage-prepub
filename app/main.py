@@ -32,9 +32,9 @@ os.makedirs(os.path.join(BASE_DIR, "data/jobs"), exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, "results"), exist_ok=True)
 
 # Import des modèles
-from models.similarity import TitleSimilarityAnalyzer
-from models.linking_rules import LinkingRulesManager
-from models.pagerank import calculate_pagerank, calculate_pagerank_with_suggestions
+from app.models.similarity import TitleSimilarityAnalyzer
+from app.models.linking_rules import LinkingRulesManager
+from app.models.pagerank import calculate_pagerank, calculate_pagerank_with_suggestions
 
 
 
