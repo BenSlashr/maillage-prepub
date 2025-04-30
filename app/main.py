@@ -27,14 +27,17 @@ logging.basicConfig(
 # Déterminer le chemin de base de l'application
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Définir le chemin de base pour les URLs (utile pour le déploiement dans un sous-répertoire)
+BASE_PATH = os.environ.get('BASE_PATH', '')
+
 # Création des dossiers nécessaires s'ils n'existent pas
 os.makedirs(os.path.join(BASE_DIR, "data/jobs"), exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, "results"), exist_ok=True)
 
 # Import des modèles
-from models.similarity import TitleSimilarityAnalyzer
-from models.linking_rules import LinkingRulesManager
-from models.pagerank import calculate_pagerank, calculate_pagerank_with_suggestions
+from app.models.similarity import TitleSimilarityAnalyzer
+from app.models.linking_rules import LinkingRulesManager
+from app.models.pagerank import calculate_pagerank, calculate_pagerank_with_suggestions
 
 
 
@@ -49,7 +52,7 @@ app = FastAPI(
 )
 
 # Configuration des templates et des fichiers statiques
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+app.mount(f"{BASE_PATH}/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 # Dictionnaire pour stocker les jobs en cours
@@ -58,7 +61,7 @@ jobs = {}
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Page d'accueil"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request, "base_path": BASE_PATH})
 
 @app.get("/rules", response_class=HTMLResponse)
 async def rules_page(request: Request):
@@ -76,7 +79,8 @@ async def rules_page(request: Request):
     return templates.TemplateResponse("rules.html", {
         "request": request,
         "types": types,
-        "rules": rules
+        "rules": rules,
+        "base_path": BASE_PATH
     })
 
 @app.post("/rules/add_type")
@@ -106,7 +110,7 @@ async def add_type(request: Request, new_type: str = Form(...)):
     rules_manager.save_rules(rules_file)
     
     # Rediriger vers la page des règles
-    return JSONResponse({"redirect": "/rules", "message": f"Type '{new_type}' ajouté avec succès"})
+    return JSONResponse({"redirect": f"{BASE_PATH}/rules", "message": f"Type '{new_type}' ajouté avec succès"})
 
 @app.post("/rules/update")
 async def update_rule(
@@ -136,7 +140,7 @@ async def update_rule(
     rules_manager.save_rules(rules_file)
     
     # Rediriger vers la page des règles
-    return JSONResponse({"redirect": "/rules", "message": f"Règle '{source_type} → {target_type}' mise à jour"})
+    return JSONResponse({"redirect": f"{BASE_PATH}/rules", "message": f"Règle '{source_type} → {target_type}' mise à jour"})
 
 @app.post("/rules/save")
 async def save_rules(request: Request):
@@ -146,7 +150,7 @@ async def save_rules(request: Request):
     rules_manager.save_rules(rules_file)
     
     # Rediriger vers la page des règles
-    return JSONResponse({"redirect": "/rules", "message": "Règles sauvegardées avec succès"})
+    return JSONResponse({"redirect": f"{BASE_PATH}/rules", "message": "Règles sauvegardées avec succès"})
 
 @app.get("/rules/export")
 async def export_rules():
@@ -182,7 +186,7 @@ async def import_rules(rules_file: UploadFile = File(...)):
         rules_manager.save_rules(default_rules_file)
         
         # Rediriger vers la page des règles
-        return JSONResponse({"redirect": "/rules", "message": "Règles importées avec succès"})
+        return JSONResponse({"redirect": f"{BASE_PATH}/rules", "message": "Règles importées avec succès"})
     except Exception as e:
         return JSONResponse(
             status_code=400,
@@ -192,7 +196,7 @@ async def import_rules(rules_file: UploadFile = File(...)):
 @app.get("/upload", response_class=HTMLResponse)
 async def upload_page(request: Request):
     """Page d'upload des fichiers"""
-    return templates.TemplateResponse("upload.html", {"request": request})
+    return templates.TemplateResponse("upload.html", {"request": request, "base_path": BASE_PATH})
 
 @app.post("/upload")
 async def upload_files(
@@ -474,7 +478,7 @@ async def view_report(request: Request, job_id: str):
     job = jobs[job_id]
     return templates.TemplateResponse(
         "report.html", 
-        {"request": request, "job": job, "job_id": job_id}
+        {"request": request, "job": job, "job_id": job_id, "base_path": BASE_PATH}
     )
 
 @app.get("/api/suggestions/{job_id}")

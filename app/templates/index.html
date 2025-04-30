@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maillage Pré-Publication</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/css/style.css">
 </head>
 <body>
     <div class="container">
@@ -15,9 +15,9 @@
         </header>
 
         <nav class="nav nav-pills nav-justified mb-4">
-            <a class="nav-link active" href="/">Accueil</a>
-            <a class="nav-link" href="/upload">Upload</a>
-            <a class="nav-link" href="/rules">Règles de Maillage</a>
+            <a class="nav-link active" href="{{ base_path }}/">Accueil</a>
+            <a class="nav-link" href="{{ base_path }}/upload">Upload</a>
+            <a class="nav-link" href="{{ base_path }}/rules">Règles de Maillage</a>
         </nav>
 
         <div class="row justify-content-center">
@@ -49,7 +49,7 @@
                         </div>
                         
                         <div class="text-center">
-                            <a href="/upload" class="btn btn-primary btn-lg">Commencer</a>
+                            <a href="{{ base_path }}/upload" class="btn btn-primary btn-lg">Commencer</a>
                         </div>
                     </div>
                 </div>

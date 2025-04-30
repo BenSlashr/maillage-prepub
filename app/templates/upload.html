@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload - Maillage Pré-Publication</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/css/style.css">
 </head>
 <body>
     <div class="container">
@@ -15,9 +15,9 @@
         </header>
 
         <nav class="nav nav-pills nav-justified mb-4">
-            <a class="nav-link" href="/">Accueil</a>
-            <a class="nav-link active" href="/upload">Upload</a>
-            <a class="nav-link" href="/rules">Règles de Maillage</a>
+            <a class="nav-link" href="{{ base_path }}/">Accueil</a>
+            <a class="nav-link active" href="{{ base_path }}/upload">Upload</a>
+            <a class="nav-link" href="{{ base_path }}/rules">Règles de Maillage</a>
         </nav>
 
         <div class="row justify-content-center">
@@ -26,7 +26,7 @@
                     <div class="card-body">
                         <h2 class="card-title text-center mb-4">Téléchargement des fichiers</h2>
                         
-                        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <form id="uploadForm" action="{{ base_path }}/upload" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <div class="mb-4">
                                 <h3>Fichier des titres (obligatoire)</h3>
                                 <p>Téléchargez un fichier Excel contenant les titres de vos articles et leur typologie.</p>
@@ -53,7 +53,7 @@
                             <div class="mb-4">
                                 <h3>Règles de maillage (optionnel)</h3>
                                 <p>Vous pouvez définir des règles de maillage entre les différents types d'articles.</p>
-                                <p><strong>Format attendu :</strong> Un fichier JSON définissant les règles de maillage. <a href="/rules" class="text-decoration-underline">Créer ou modifier des règles</a></p>
+                                <p><strong>Format attendu :</strong> Un fichier JSON définissant les règles de maillage. <a href="{{ base_path }}/rules" class="text-decoration-underline">Créer ou modifier des règles</a></p>
                                 <div class="input-group mb-3">
                                     <input type="file" class="form-control" id="rulesFile" name="rules_file" accept=".json">
                                     <label class="input-group-text" for="rulesFile">Parcourir</label>
@@ -61,7 +61,7 @@
                             </div>
                             
                             <div class="text-center mt-4">
-                                <a href="/" class="btn btn-secondary me-2">Retour</a>
+                                <a href="{{ base_path }}/" class="btn btn-secondary me-2">Retour</a>
                                 <button type="submit" class="btn btn-primary" id="submitBtn">Lancer l'analyse</button>
                             </div>
                         </form>
@@ -115,7 +115,7 @@
                 const formData = new FormData(form);
                 
                 try {
-                    const response = await fetch('/upload', {
+                    const response = await fetch('{{ base_path }}/upload', {
                         method: 'POST',
                         body: formData
                     });
@@ -136,7 +136,7 @@
             
             async function checkJobStatus(jobId) {
                 try {
-                    const response = await fetch(`/jobs/${jobId}`);
+                    const response = await fetch(`{{ base_path }}/jobs/${jobId}`);
                     const job = await response.json();
                     
                     // Mettre à jour la barre de progression
@@ -145,7 +145,7 @@
                     
                     if (job.status === 'completed') {
                         // Rediriger vers la page de rapport
-                        window.location.href = `/report/${jobId}`;
+                        window.location.href = `{{ base_path }}/report/${jobId}`;
                     } else if (job.status === 'failed') {
                         statusMessage.textContent = `Erreur: ${job.message}`;
                     } else {
